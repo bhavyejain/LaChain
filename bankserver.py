@@ -11,7 +11,22 @@ def handle_client(client_socket, client_id):
     while True:
         try:
             message = client_socket.recv(config.BUFF_SIZE).decode()
-            print(f'{client_id}:')
+            if message:
+                print(f'{client_id}: {message}')
+
+                if message.startswith("BALANCE"):
+                    client_socket.sendall(bytes(balance_sheet[client_id], "utf-8"))
+
+                elif message.startswith("TRANSFER"):
+                    transfer = message.split()  # ['TRANSFER', 'client_n', 'XX']
+                    amount = int(transfer[2])
+                    balance_sheet[client_id] = balance_sheet[client_id] - amount
+                    balance_sheet[transfer[1]] = balance_sheet[transfer[1]] + amount
+
+            else:
+                print(f'Closing connection to {client_id}')
+                client_socket.close()
+                break
         except:
             index = clients.index(client_socket)
             clients.remove(client_socket)
