@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-echo "HELLOOOOOO"
-
 BASEDIR=$(dirname "$0")
 cd "$BASEDIR"
 
