@@ -53,7 +53,7 @@ def receive():
     while True:
         # Accept Connection
         client, addr = server.accept()
-        client.setblocking(False)
+        client.setblocking(True)
         client_id = client.recv(config.BUFF_SIZE).decode()
         print(f"Connected with {client_id}")
         

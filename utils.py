@@ -1,4 +1,4 @@
-class Request:
+class Message:
     def __init__(self, source, requestType, clock=None, transaction=None):
         self.source = source
         self.requestType = requestType

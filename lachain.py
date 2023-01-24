@@ -13,7 +13,10 @@ print(pwd)
 
 applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh server"')
 time.sleep(0.5)
-# applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_1"')
+applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_1"')
+time.sleep(1)
+applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_2"')
+time.sleep(1)
 
 client_name = "CLI"
 
