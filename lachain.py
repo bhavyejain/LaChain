@@ -14,7 +14,6 @@ print("================= STARTING LACHAIN =================")
 print("Starting bank server...")
 applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh server"')
 time.sleep(0.5)
-'''
 print("Starting client_1...")
 applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_1"')
 time.sleep(0.5)
@@ -24,7 +23,6 @@ time.sleep(0.5)
 print("Starting client_3...")
 applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_3"')
 time.sleep(0.5)
-'''
 
 client_name = "CLI"
 
@@ -46,11 +44,27 @@ def send():
     while True:
         command = input(">>> ").strip()
         seg_cmd = command.split()
-        app = seg_cmd[0]
-        if app == "server":
-            connections[app].sendall(bytes("BALANCE", "utf-8"))
-        elif app == "client":
-            print(f'')
+        op_type = seg_cmd[0]
+
+        if op_type == "balance":
+            app = seg_cmd[1]
+            if app == "server":
+                connections[app].sendall(bytes("BALANCE", "utf-8"))
+            elif app == "client":
+                connections[seg_cmd[2]].sendall(bytes("BALANCE", "utf-8"))
+
+        elif op_type == "transfer":
+            from_c = seg_cmd[1]
+            to_c = seg_cmd[2]
+            amt = seg_cmd[3]
+            connections[from_c].sendall(bytes(f'TRANSFER {to_c} {amt}', "utf-8"))
+
+        elif op_type == "bchain":
+            client = seg_cmd[1]
+            connections[client].sendall(bytes("BLOCKCHAIN", "utf-8"))
+
+        else:
+            print(f'Invalid command!')
 
 def connect_to(name, port):
     print(f'startup# Connecting to {name}...')
@@ -65,13 +79,9 @@ def connect_to(name, port):
 if __name__ == "__main__":
 
     connect_to("server", config.BANK_PORT)
-    '''
+
     for client, port in config.CLIENT_PORTS.items():
         connect_to(client, port)
-    '''
 
     print("================= SETUP COMPLETE =================")
-
-    #send_thread = threading.Thread(target=send)
-    #send_thread.start()
     send()
