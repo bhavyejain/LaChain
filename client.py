@@ -31,6 +31,10 @@ def handle_cli(client, client_id):
             message = client.recv(config.BUFF_SIZE).decode()
             if message:
                 print(f'{client_id}: {message}')
+                if message == "BALANCE":
+                    connections['SERVER'].sendall(bytes("BALANCE", "utf-8"))
+                    bal = connections["SERVER"].recv(config.BUFF_SIZE).decode()
+                    print(f'Balance: {bal}')
             else:
                 print(f'handle_cli# Closing connection to {client_id}')
                 client.close()
@@ -68,6 +72,7 @@ if __name__ == "__main__":
     # connect to bank server
     print("startup# Connecting to server...")
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    server.setblocking(True)
     server.connect((config.HOST, config.BANK_PORT))
     server.sendall(bytes(client_name, "utf-8"))
     print(f"startup# {server.recv(config.BUFF_SIZE).decode()}")

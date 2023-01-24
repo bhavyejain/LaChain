@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-cd "/Users/bhavye/Documents/DistributedSystems/LaChain"
+BASEDIR=$(dirname "$0")
+cd "$BASEDIR"
 
 if [ "$1" = "server" ]
 then
