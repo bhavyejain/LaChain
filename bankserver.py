@@ -16,7 +16,9 @@ def handle_client(client, client_id):
                 print(f'{client_id}: {message}')
 
                 if message.startswith("BALANCE"):
-                    client.sendall(bytes(balance_sheet[client_id], "utf-8"))
+                    bal = balance_sheet[client_id]
+                    print(f'Sending balance {bal} to {client_id}')
+                    client.sendall(bytes(str(bal), "utf-8"))
 
                 elif message.startswith("TRANSFER"):
                     transfer = message.split()  # ['TRANSFER', 'client_n', 'XX']
@@ -40,7 +42,7 @@ def handle_cli(client, client_id):
             if message:
                 print(f'{client_id}: {message}')
                 if message == "BALANCE":
-                    client.sendall(bytes(str(balance_sheet), "utf-8"))
+                    print(str(balance_sheet))
             else:
                 print(f'Closing connection to {client_id}')
                 client.close()
