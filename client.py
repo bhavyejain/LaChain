@@ -15,7 +15,7 @@ def handle_client(client, client_id):
         try:
             message = client.recv(config.BUFF_SIZE).decode()
             if message:
-                print(f'handle_client# {client_id}: {message}')
+                print(f'{client_id}: {message}')
             else:
                 print(f'handle_client# Closing connection to {client_id}')
                 client.close()
@@ -30,7 +30,7 @@ def handle_cli(client, client_id):
         try:
             message = client.recv(config.BUFF_SIZE).decode()
             if message:
-                print(f'handle_cli# {client_id}: {message}')
+                print(f'{client_id}: {message}')
             else:
                 print(f'handle_cli# Closing connection to {client_id}')
                 client.close()
@@ -43,7 +43,7 @@ def receive():
     while True:
         # Accept Connection
         client, addr = mySocket.accept()
-        client.setblocking(False)
+        client.setblocking(True)
         client_id = client.recv(config.BUFF_SIZE).decode()
         print(f"receive# Connecting with {client_id}...")
 
@@ -78,13 +78,12 @@ if __name__ == "__main__":
     for n in range(1, p_id):
         client_tc = f'client_{n}'
         print(f'startup# Connecting to {client_tc}...')
-        new_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        new_connection.connect((config.HOST, config.CLIENT_PORTS[client_tc]))
-        new_connection.setblocking(True)
-        new_connection.sendall(bytes(client_name, "utf-8"))
-        print(f"startup# {new_connection.recv(config.BUFF_SIZE).decode()}")
-        connections[client_tc] = new_connection
-        thread = threading.Thread(target=handle_client, args=(new_connection, client_tc,))
+        connections[client_tc] = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        connections[client_tc].connect((config.HOST, config.CLIENT_PORTS[client_tc]))
+        connections[client_tc].setblocking(True)
+        connections[client_tc].sendall(bytes(client_name, "utf-8"))
+        print(f"startup# {connections[client_tc].recv(config.BUFF_SIZE).decode()}")
+        thread = threading.Thread(target=handle_client, args=(connections[client_tc], client_tc,))
         thread.start()
 
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as mySocket:
