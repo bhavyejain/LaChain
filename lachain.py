@@ -9,6 +9,7 @@ import threading
 subprocess.call(['chmod', '+x', 'startup.sh'])
 
 pwd = os.getcwd()
+f = open('receive.log', 'w+')
 print("================= STARTING LACHAIN =================")
 
 print("Starting bank server...")
@@ -36,6 +37,8 @@ def receive(app):
             if not message:
                 app.close()
                 break
+            else:
+                f.write(message)
         except:
             app.close()
             break
@@ -43,28 +46,29 @@ def receive(app):
 def send():
     while True:
         command = input(">>> ").strip()
-        seg_cmd = command.split()
-        op_type = seg_cmd[0]
+        if command != "":
+            seg_cmd = command.split()
+            op_type = seg_cmd[0]
 
-        if op_type == "balance":
-            app = seg_cmd[1]
-            if app == "server":
-                connections[app].sendall(bytes("BALANCE", "utf-8"))
-            elif app == "client":
-                connections[seg_cmd[2]].sendall(bytes("BALANCE", "utf-8"))
+            if op_type == "balance":
+                app = seg_cmd[1]
+                if app == "server":
+                    connections[app].sendall(bytes("BALANCE", "utf-8"))
+                elif app == "client":
+                    connections[seg_cmd[2]].sendall(bytes("BALANCE", "utf-8"))
 
-        elif op_type == "transfer":
-            from_c = seg_cmd[1]
-            to_c = seg_cmd[2]
-            amt = seg_cmd[3]
-            connections[from_c].sendall(bytes(f'TRANSFER {to_c} {amt}', "utf-8"))
+            elif op_type == "transfer":
+                from_c = seg_cmd[1]
+                to_c = seg_cmd[2]
+                amt = seg_cmd[3]
+                connections[from_c].sendall(bytes(f'TRANSFER {to_c} {amt}', "utf-8"))
 
-        elif op_type == "bchain":
-            client = seg_cmd[1]
-            connections[client].sendall(bytes("BLOCKCHAIN", "utf-8"))
+            elif op_type == "bchain":
+                client = seg_cmd[1]
+                connections[client].sendall(bytes("BLOCKCHAIN", "utf-8"))
 
-        else:
-            print(f'Invalid command!')
+            else:
+                print(f'Invalid command!')
 
 def connect_to(name, port):
     print(f'startup# Connecting to {name}...')
