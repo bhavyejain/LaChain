@@ -2,20 +2,43 @@ import socket
 import threading
 import config
 import sys
-from utils import Message, Transaction
+import time
+from utils import Message, Transaction, LClock, M_TYPE, RESULT
+from threading import Lock
 
 connections = {}
 client_name = ""
 p_id = 0
+
+def get_pid(client_name):
+    return int(client_name.split('_')[1])
+
+def send_to_client(message, client_n, delay=2):
+    print(f'Sending {message.messageType.name} message with clock {message.clock.__str__()} to {client_n}')
+    time.sleep(delay)
+    connections[client_n].sendall(bytes(message.__str__(), "utf-8"))
+
+def broadcast_to_clients(message):
+    print('Starting broadcast...')
+    time.sleep(2)
+    for client in connections.keys():
+        if client != "SERVER" and client != "CLI":
+            send_to_client(message, client, 0)
 
 def handle_client(client, client_id):
     client.sendall(bytes(f'Client {client_name} connected', "utf-8"))
 
     while True:
         try:
-            message = client.recv(config.BUFF_SIZE).decode()
-            if message:
-                print(f'{client_id}: {message}')
+            raw_message = client.recv(config.BUFF_SIZE).decode()
+            if raw_message:
+                clock.increment()
+                print(f'{client_id}: {raw_message}')
+                message = Message(raw_message)
+
+                if message.messageType == M_TYPE.MUTEX:
+                    reply = Message(messageType=M_TYPE.REPLY, source=client_name, clock=clock.increment(), req_clock=message.clock)
+                    send_to_client(message, client_id)
             else:
                 print(f'handle_client# Closing connection to {client_id}')
                 client.close()
@@ -35,6 +58,16 @@ def handle_cli(client, client_id):
                     connections['SERVER'].sendall(bytes("BALANCE", "utf-8"))
                     bal = connections["SERVER"].recv(config.BUFF_SIZE).decode()
                     print(f'Balance: {bal}')
+                elif message == "BLOCKCHAIN":
+                    print('Lmao my blockchain does not exist!')
+                    print(connections.__str__())
+                elif message.startswith("TRANSFER"):
+                    cmd = message.split()
+                    transaction = Transaction(client_name, cmd[1], cmd[2])
+                    print(f'Created transaction: {transaction}')
+                    message = Message(messageType=M_TYPE.MUTEX, source=client_name, clock=clock.increment(), transaction=transaction)
+                    print(f'Broadcasting message: {message.__str__()}')
+                    broadcast_to_clients(message)
             else:
                 print(f'handle_cli# Closing connection to {client_id}')
                 client.close()
@@ -64,7 +97,10 @@ def receive():
 if __name__ == "__main__":
     
     client_name = sys.argv[1]   # client_n
-    p_id = int(client_name.split('_')[1])   # n
+    p_id = get_pid(client_name)   # n
+    
+    global clock
+    clock = LClock(time=0, pid=p_id)
 
     print('================= BEGIN STARTUP =================')
     print(f'startup# Setting up Client {client_name} with process id {p_id}...')
