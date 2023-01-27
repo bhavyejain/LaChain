@@ -15,15 +15,10 @@ print("================= STARTING LACHAIN =================")
 print("Starting bank server...")
 applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh server"')
 time.sleep(0.5)
-print("Starting client_1...")
-applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_1"')
-time.sleep(0.5)
-print("Starting client_2...")
-applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_2"')
-time.sleep(0.5)
-print("Starting client_3...")
-applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_3"')
-time.sleep(0.5)
+for client in config.CLIENT_PORTS.keys():
+    print(f'Starting {client}...')
+    applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client {client}"')
+    time.sleep(0.5)
 
 client_name = "CLI"
 
