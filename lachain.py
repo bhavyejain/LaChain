@@ -62,7 +62,8 @@ def send():
             
             elif op_type == "exit":
                 for connection in connections.values():
-                    connection.sendall(bytes("EXIT", "utf-8"))
+                    # connection.sendall(bytes("EXIT", "utf-8"))
+                    connection.close()
                 sys.exit(0)
 
             else:

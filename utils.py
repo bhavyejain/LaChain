@@ -46,7 +46,7 @@ class LClock:
     def increment(self):
         self.time += 1
         print(f'----- CLOCK : {self.__str__()} -----')
-        return self
+        return LClock(self.time, self.pid)
 
     def update(self, clock):
         self.time = max(self.time, clock.time) + 1
@@ -94,7 +94,7 @@ class Block:
         return hash.hexdigest()
     
     def __str__(self):
-        return f'[{self.prev_hash}|{self.transaction}|{self.status.name}]'
+        return f'[{self.prev_hash}|{self.transaction}|{self.timestamp}|{self.status.name}]'
 
 class BlockChain:
     def __init__(self):
@@ -142,9 +142,20 @@ class BlockChain:
         self._chain[self._current].status = status
         if self._current != len(self._chain)-1:
             self._current += 1
+    
+    def current_client(self):
+        curr_block = self.current()
+        if curr_block == None:
+            return None
+        else:
+            return curr_block.transaction.source
 
     def print_chain(self):
         for block in self._chain:
             print(block.__str__())
             print("\t |")
         print("\t []")
+        print(f'Current hash: {self.current().prev_hash}')
+    
+    def print_current(self):
+        print(f'{self.current().__str__()}')
