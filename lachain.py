@@ -5,6 +5,7 @@ import time
 import socket
 import config
 import threading
+import sys
 
 subprocess.call(['chmod', '+x', 'startup.sh'])
 
@@ -14,15 +15,10 @@ print("================= STARTING LACHAIN =================")
 print("Starting bank server...")
 applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh server"')
 time.sleep(0.5)
-print("Starting client_1...")
-applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_1"')
-time.sleep(0.5)
-print("Starting client_2...")
-applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_2"')
-time.sleep(0.5)
-print("Starting client_3...")
-applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client client_3"')
-time.sleep(0.5)
+for client in config.CLIENT_PORTS.keys():
+    print(f'Starting {client}...')
+    applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh client {client}"')
+    time.sleep(0.5)
 
 client_name = "CLI"
 
@@ -43,28 +39,35 @@ def receive(app):
 def send():
     while True:
         command = input(">>> ").strip()
-        seg_cmd = command.split()
-        op_type = seg_cmd[0]
+        if command != "":
+            seg_cmd = command.split()
+            op_type = seg_cmd[0]
 
-        if op_type == "balance":
-            app = seg_cmd[1]
-            if app == "server":
-                connections[app].sendall(bytes("BALANCE", "utf-8"))
-            elif app == "client":
-                connections[seg_cmd[2]].sendall(bytes("BALANCE", "utf-8"))
+            if op_type == "balance":
+                app = seg_cmd[1]
+                if app == "server":
+                    connections[app].sendall(bytes("BALANCE", "utf-8"))
+                elif app == "client":
+                    connections[seg_cmd[2]].sendall(bytes("BALANCE", "utf-8"))
 
-        elif op_type == "transfer":
-            from_c = seg_cmd[1]
-            to_c = seg_cmd[2]
-            amt = seg_cmd[3]
-            connections[from_c].sendall(bytes(f'TRANSFER {to_c} {amt}', "utf-8"))
+            elif op_type == "transfer":
+                from_c = seg_cmd[1]
+                to_c = seg_cmd[2]
+                amt = seg_cmd[3]
+                connections[from_c].sendall(bytes(f'TRANSFER {to_c} {amt}', "utf-8"))
 
-        elif op_type == "bchain":
-            client = seg_cmd[1]
-            connections[client].sendall(bytes("BLOCKCHAIN", "utf-8"))
+            elif op_type == "bchain":
+                client = seg_cmd[1]
+                connections[client].sendall(bytes("BLOCKCHAIN", "utf-8"))
+            
+            elif op_type == "exit":
+                for connection in connections.values():
+                    # connection.sendall(bytes("EXIT", "utf-8"))
+                    connection.close()
+                sys.exit(0)
 
-        else:
-            print(f'Invalid command!')
+            else:
+                print(f'Invalid command!')
 
 def connect_to(name, port):
     print(f'startup# Connecting to {name}...')
