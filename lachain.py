@@ -5,11 +5,11 @@ import time
 import socket
 import config
 import threading
+import sys
 
 subprocess.call(['chmod', '+x', 'startup.sh'])
 
 pwd = os.getcwd()
-f = open('receive.log', 'w+')
 print("================= STARTING LACHAIN =================")
 
 print("Starting bank server...")
@@ -37,8 +37,6 @@ def receive(app):
             if not message:
                 app.close()
                 break
-            else:
-                f.write(message)
         except:
             app.close()
             break
@@ -66,6 +64,11 @@ def send():
             elif op_type == "bchain":
                 client = seg_cmd[1]
                 connections[client].sendall(bytes("BLOCKCHAIN", "utf-8"))
+            
+            elif op_type == "exit":
+                for connection in connections.values():
+                    connection.sendall(bytes("EXIT", "utf-8"))
+                sys.exit(0)
 
             else:
                 print(f'Invalid command!')
