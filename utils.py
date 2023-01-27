@@ -45,9 +45,12 @@ class LClock:
 
     def increment(self):
         self.time += 1
+        print(f'----- CLOCK : {self.__str__()} -----')
+        return self
 
     def update(self, clock):
         self.time = max(self.time, clock.time) + 1
+        print(f'----- CLOCK : {self.__str__()} -----')
     
     def __lt__(self, clock):
         if self.time < clock.time:
