@@ -5,6 +5,7 @@ import sys
 import time
 from utils import Message, Transaction, LClock, Block, BlockChain, M_TYPE, RESULT
 from threading import Lock
+from utils import Colors as c
 
 connections = {}
 client_name = ""
@@ -18,7 +19,7 @@ def get_pid(client_name):
     return int(client_name.split('_')[1])
 
 def send_to_client(message, client_n, delay=config.DEF_DELAY):
-    print(f'Sending {message.messageType.name} message with clock {message.clock.__str__()} to {client_n}')
+    print(f'{c.YELLOW}Sending {message.messageType.name} with clock {message.clock.__str__()} to {client_n}{c.ENDC}')
     time.sleep(delay)
     connections[client_n].sendall(bytes(message.__str__(), "utf-8"))
 
@@ -33,40 +34,39 @@ def job_worker():
     global reply_count
 
     print('Starting job worker...')
-    print(f'Requires replies per transaction: {REQ_REP}')
     while True:
         with b_lock:
             block = blockchain.current()
             if blockchain.current_client() == client_name and not block.is_resolved() and reply_count >= REQ_REP:
-                print(f'========== Executing Transfer ==========')
+                print(f'========== {c.SELECTED}Executing Transfer{c.ENDC} ==========')
                 reply_count -= REQ_REP
                 transaction = block.transaction
                 connections['SERVER'].sendall(bytes("BALANCE", "utf-8"))
                 bal = connections["SERVER"].recv(config.BUFF_SIZE).decode()
-                print(f'Balance: {bal}')
-                print(f'Transaction: {transaction.__str__()}')
+                print(f'{c.GREEN}Balance:{c.ENDC} ${bal}')
+                print(f'{c.GREEN}Transaction:{c.ENDC} {transaction.__str__()}')
                 if int(bal) < int(transaction.amount):
-                    print("!! FAILED !!")
+                    print(f"{c.FAILED}!! FAILED !!{c.ENDC}")
                     blockchain.resolve_current(RESULT.ABORTED)
                     result = RESULT.ABORTED
                 else:
-                    print("!! SUCCESS !!")
+                    print(f"{c.SUCCESS}!! SUCCESS !!{c.ENDC}")
                     connections['SERVER'].sendall(bytes(f"TRANSFER {transaction.destination} {transaction.amount}", "utf-8"))
                     blockchain.resolve_current(RESULT.SUCCESS)
                     result = RESULT.SUCCESS
                 release = Message(messageType=M_TYPE.RELEASE, source=client_name, clock=clock, req_clock=block.timestamp, status=result)
+                print(f'Broadcasting message: {release.__str__()}')
                 broadcast_to_clients(release)
-                print(f'========== Operation Complete ==========')
+                print(f'========== {c.SELECTED}Operation Complete{c.ENDC} ==========')
         time.sleep(1)
 
 def handle_client(client, client_id):
     client.sendall(bytes(f'Client {client_name} connected', "utf-8"))
-
     while True:
         try:
             raw_message = client.recv(config.BUFF_SIZE).decode()
             if raw_message:
-                print(f'{client_id}: {raw_message}')
+                print(f'{c.BLUE}{client_id}: {raw_message}{c.ENDC}')
                 if raw_message.startswith("Client"):
                     continue
 
@@ -90,7 +90,7 @@ def handle_client(client, client_id):
                 client.close()
                 break
         except Exception as e:
-            print(f'handle_client# Exception caused, closing connection to {client_id}')
+            print(f'{c.ERROR}handle_client# Exception thrown in {client_id} thread!{c.ENDC}')
             print(f'Exception: {e.__str__()}, Traceback: {e.__traceback__()}')
 
 def handle_cli(client, client_id):
@@ -99,11 +99,11 @@ def handle_cli(client, client_id):
         try:
             message = client.recv(config.BUFF_SIZE).decode()
             if message:
-                print(f'{client_id}: {message}')
+                print(f'{c.VIOLET}{client_id}{c.ENDC}: {message}')
                 if message == "BALANCE":
                     connections['SERVER'].sendall(bytes("BALANCE", "utf-8"))
                     bal = connections["SERVER"].recv(config.BUFF_SIZE).decode()
-                    print(f'Balance: {bal}')
+                    print(f'{c.GREEN}Balance: ${bal}{c.ENDC}')
                 elif message == "BLOCKCHAIN":
                     blockchain.print_chain()
                 elif message.startswith("TRANSFER"):
@@ -122,7 +122,7 @@ def handle_cli(client, client_id):
                 client.close()
                 break
         except Exception as e:
-            print(f'handle_cli# Exception caused, closing connection to {client_id}')
+            print(f'{c.ERROR}handle_cli# Exception thrown in {client_id} thread!{c.ENDC}')
             print(f'Exception: {e.__str__()}, Traceback: {e.__traceback__()}')
 
 def receive():
@@ -156,7 +156,7 @@ def connect_running_clients():
             thread = threading.Thread(target=handle_client, args=(connections[client_tc], client_tc,))
             thread.start()
         except:
-            print(f'startup# Failed to connect to {client_tc}!')
+            print(f'{c.ERROR}startup# Failed to connect to {client_tc}!{c.ENDC}')
 
 if __name__ == "__main__":
     
@@ -165,7 +165,7 @@ if __name__ == "__main__":
     global clock
     clock = LClock(time=0, pid=p_id)
 
-    print('================= BEGIN STARTUP =================')
+    print(f'================= BEGIN STARTUP =================')
     print(f'startup# Setting up Client {client_name} with process id {p_id}...')
 
     # connect to bank server
@@ -192,7 +192,7 @@ if __name__ == "__main__":
         mySocket.bind((config.HOST, config.CLIENT_PORTS[client_name]))
         mySocket.listen(5)
 
-        print('================= STARTUP COMPLETE =================')
+        print(f'================= STARTUP COMPLETE =================')
         print('Listening for new connections...')
 
         receive()
