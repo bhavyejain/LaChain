@@ -6,11 +6,12 @@ import socket
 import config
 import threading
 import sys
+from utils import Colors as c
 
 subprocess.call(['chmod', '+x', 'startup.sh'])
 
 pwd = os.getcwd()
-print("================= STARTING LACHAIN =================")
+print(f"================= {c.SELECTED}STARTING LACHAIN{c.ENDC} =================")
 
 print("Starting bank server...")
 applescript.tell.app("Terminal",f'do script "{pwd}/startup.sh server"')
@@ -43,7 +44,7 @@ def execute_command(seg_cmd):
         return
     
     elif op_type == "wait":
-        input("Press ENTER to continue simulation...")
+        input(f"Press {c.BLINK}ENTER{c.ENDC} to continue simulation...")
 
     elif op_type == "balance":
         app = seg_cmd[1]
@@ -67,7 +68,7 @@ def execute_command(seg_cmd):
         time.sleep(t)
     
     else:
-        print(f'Invalid command!')
+        print(f'{c.ERROR}Invalid command!{c.ENDC}')
 
 def send():
     while True:
@@ -82,12 +83,15 @@ def send():
                     start_time = time.time()
                     for line in f.readlines():
                         if line.strip() != "":
-                            print(f'{line}')
+                            if line.startswith('#'):
+                                print(f'{c.VIOLET}{line}{c.ENDC}')
+                            else:
+                                print(f'{line}')
                             seg = line.strip().split()
                             execute_command(seg)
                     end_time = time.time()
                     elapsed_time = end_time - start_time
-                    print(f'Execution time: {elapsed_time} seconds')
+                    print(f'{c.BLUE}Execution time: {elapsed_time} seconds{c.ENDC}')
                 print('========== SIMULATION COMPLETE ==========')
             
             elif op_type == "exit":
@@ -116,5 +120,5 @@ if __name__ == "__main__":
     for client, port in config.CLIENT_PORTS.items():
         connect_to(client, port)
 
-    print("================= SETUP COMPLETE =================")
+    print(f"================= {c.SELECTED}SETUP COMPLETE{c.ENDC} =================")
     send()
