@@ -37,21 +37,20 @@ def job_worker():
     while True:
         with b_lock:
             block = blockchain.current()
-            # print(f'WORKER: curr_client:{blockchain.current_client()} | reply_count:{reply_count}')
             if blockchain.current_client() == client_name and not block.is_resolved() and reply_count >= REQ_REP:
                 print(f'========== Executing Transfer ==========')
                 reply_count -= REQ_REP
                 transaction = block.transaction
-                print(f'Transaction: {transaction.__str__()}')
                 connections['SERVER'].sendall(bytes("BALANCE", "utf-8"))
                 bal = connections["SERVER"].recv(config.BUFF_SIZE).decode()
                 print(f'Balance: {bal}')
+                print(f'Transaction: {transaction.__str__()}')
                 if int(bal) < int(transaction.amount):
-                    print("FAILED")
+                    print("!! FAILED !!")
                     blockchain.resolve_current(RESULT.ABORTED)
                     result = RESULT.ABORTED
                 else:
-                    print("SUCCESS")
+                    print("!! SUCCESS !!")
                     connections['SERVER'].sendall(bytes(f"TRANSFER {transaction.destination} {transaction.amount}", "utf-8"))
                     blockchain.resolve_current(RESULT.SUCCESS)
                     result = RESULT.SUCCESS
@@ -178,6 +177,10 @@ if __name__ == "__main__":
     print(f"startup# {server.recv(config.BUFF_SIZE).decode()}")
 
     connections['SERVER'] = server
+
+    connections['SERVER'].sendall(bytes("BALANCE", "utf-8"))
+    bal = connections["SERVER"].recv(config.BUFF_SIZE).decode()
+    print(f'Balance: {bal}')
 
     # connect to clients that have started up
     connect_running_clients()

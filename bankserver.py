@@ -39,7 +39,10 @@ def handle_cli(client, client_id):
             if message:
                 print(f'{client_id}: {message}')
                 if message == "BALANCE":
-                    print(str(balance_sheet))
+                    print("===== ACCOUNT INFO =====")
+                    for c_name, bal in balance_sheet.items():
+                        print(f'{c_name} :\t {bal}')
+                    print("========================")
             else:
                 print(f'Closing connection to {client_id}')
                 client.close()
