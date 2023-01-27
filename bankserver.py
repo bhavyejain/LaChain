@@ -8,7 +8,6 @@ balance_sheet = {}
 
 def handle_client(client, client_id):
     client.sendall(bytes("Server connected", "utf-8"))
-
     while True:
         try:
             message = client.recv(config.BUFF_SIZE).decode()
@@ -25,14 +24,12 @@ def handle_client(client, client_id):
                     amount = int(transfer[2])
                     balance_sheet[client_id] = balance_sheet[client_id] - amount
                     balance_sheet[transfer[1]] = balance_sheet[transfer[1]] + amount
-
             else:
                 print(f'Closing connection to {client_id}')
                 client.close()
                 break
-        except:
-            client.close()
-            break
+        except Exception as e:
+            print(f'handle_client# Exception in {client_id} thread! Details: {e.__str__()}')
 
 def handle_cli(client, client_id):
     client.sendall(bytes("Server connected", "utf-8"))
@@ -47,9 +44,8 @@ def handle_cli(client, client_id):
                 print(f'Closing connection to {client_id}')
                 client.close()
                 break
-        except:
-            client.close()
-            break
+        except Exception as e:
+            print(f'handle_client# Exception in {client_id} thread! Details: {e.__str__()}')
 
 def receive():
     while True:
@@ -63,9 +59,9 @@ def receive():
             target = handle_cli
         else:
             target = handle_client
-            balance_sheet[client_id] = 10
+            balance_sheet[client_id] = config.INIT_BALANCE
 
-        thread = threading.Thread(target=target, args=(client, client_id, ))
+        thread = threading.Thread(target=target, args=(client, client_id,))
         thread.start()
 
 if (__name__ == "__main__"):
