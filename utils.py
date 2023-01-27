@@ -94,7 +94,7 @@ class Block:
         return hash.hexdigest()
     
     def __str__(self):
-        return f'[{self.prev_hash}|{self.transaction}|{self.timestamp}|{self.status.name}]'
+        return f'[{self.prev_hash}|{self.transaction}|{self.status.name}]'
 
 class BlockChain:
     def __init__(self):
@@ -155,7 +155,6 @@ class BlockChain:
             print(block.__str__())
             print("\t |")
         print("\t []")
-        print(f'Current hash: {self.current().prev_hash}')
     
     def print_current(self):
         print(f'{self.current().__str__()}')
