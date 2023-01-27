@@ -155,7 +155,6 @@ class BlockChain:
             print(block.__str__())
             print("\t |")
         print("\t []")
-        print(f'Current hash: {self.current().prev_hash}')
     
     def print_current(self):
         print(f'{self.current().__str__()}')

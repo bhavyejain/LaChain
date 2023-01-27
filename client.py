@@ -39,7 +39,7 @@ def job_worker():
             block = blockchain.current()
             # print(f'WORKER: curr_client:{blockchain.current_client()} | reply_count:{reply_count}')
             if blockchain.current_client() == client_name and not block.is_resolved() and reply_count >= REQ_REP:
-                print(f'------- Executing Transfer -------')
+                print(f'========== Executing Transfer ==========')
                 reply_count -= REQ_REP
                 transaction = block.transaction
                 print(f'Transaction: {transaction.__str__()}')
@@ -57,6 +57,7 @@ def job_worker():
                     result = RESULT.SUCCESS
                 release = Message(messageType=M_TYPE.RELEASE, source=client_name, clock=clock, req_clock=block.timestamp, status=result)
                 broadcast_to_clients(release)
+                print(f'========== Operation Complete ==========')
         time.sleep(1)
 
 def handle_client(client, client_id):
