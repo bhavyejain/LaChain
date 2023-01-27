@@ -1,5 +1,6 @@
 BANK_PORT = 8085
 CLIENT_PORTS = {"client_1": 9260, "client_2": 9261, "client_3": 9262}
-CLI_PORT = 9265
 BUFF_SIZE = 1024
 HOST = '127.0.0.1'
+INIT_BALANCE = 10
+DEF_DELAY = 3
