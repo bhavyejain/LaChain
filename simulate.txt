@@ -11,15 +11,7 @@ delay 1
 wait
 # TRIVIAL TRANSFER SUCCESS
 transfer client_1 client_2 2
-delay 5
-bchain client_1
-bchain client_2
-bchain client_3
-delay 1
 wait
-# TRIVIAL TRANSFER ABORT
-transfer client_1 client_2 10
-delay 5
 bchain client_1
 bchain client_2
 bchain client_3
@@ -27,9 +19,9 @@ delay 1
 wait
 # 2 CONCURRENT TRANSFERS
 transfer client_3 client_1 5
-delay 0.25
+delay 1
 transfer client_2 client_3 3
-delay 8
+wait
 balance server
 bchain client_1
 bchain client_2
@@ -38,12 +30,20 @@ delay 1
 wait
 # 3 CONCURRENT TRANSFERS
 transfer client_1 client_2 1
-delay 0.25
+delay 0.6
 transfer client_3 client_1 1
-delay 0.25
+delay 0.6
 transfer client_2 client_3 1
-delay 11
+wait
 balance server
+bchain client_1
+bchain client_2
+bchain client_3
+delay 1
+wait
+# TRIVIAL TRANSFER ABORT
+transfer client_1 client_2 100
+wait
 bchain client_1
 bchain client_2
 bchain client_3
