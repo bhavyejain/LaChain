@@ -45,12 +45,12 @@ class LClock:
 
     def increment(self):
         self.time += 1
-        print(f'----- CLOCK : {self.__str__()} -----')
+        print(f'{Colors.BOLD}{Colors.VIOLET}----- CLOCK : {self.__str__()} -----{Colors.ENDC}{Colors.ENDC}')
         return LClock(self.time, self.pid)
 
     def update(self, clock):
         self.time = max(self.time, clock.time) + 1
-        print(f'----- CLOCK : {self.__str__()} -----')
+        print(f'{Colors.BOLD}{Colors.VIOLET}----- CLOCK : {self.__str__()} -----{Colors.ENDC}{Colors.ENDC}')
     
     def __lt__(self, clock):
         if self.time < clock.time:
@@ -94,7 +94,14 @@ class Block:
         return hash.hexdigest()
     
     def __str__(self):
-        return f'[{self.prev_hash}|{self.transaction}|{self.timestamp}|{self.status.name}]'
+        str = f'{Colors.GRAY}{self.prev_hash}{Colors.ENDC}|{Colors.BLUE}{self.transaction}{Colors.ENDC}|'
+        if self.status == RESULT.WAITING:
+            str = str + f'{Colors.YELLOW}{self.status.name}{Colors.ENDC}'
+        elif self.status == RESULT.SUCCESS:
+            str = str + f'{Colors.GREEN}{self.status.name}{Colors.ENDC}'
+        else:
+            str = str + f'{Colors.ERROR}{self.status.name}{Colors.ENDC}'
+        return f'[{str}]'
 
 class BlockChain:
     def __init__(self):
@@ -151,11 +158,27 @@ class BlockChain:
             return curr_block.transaction.source
 
     def print_chain(self):
+        print('\n')
         for block in self._chain:
             print(block.__str__())
             print("\t |")
         print("\t []")
-        print(f'Current hash: {self.current().prev_hash}')
+        print('\n')
     
     def print_current(self):
         print(f'{self.current().__str__()}')
+
+class Colors:
+    VIOLET = '\033[94m'
+    BLUE = '\033[36m'
+    GREEN = '\033[92m'
+    YELLOW = '\033[93m'    # yellow
+    ERROR = '\033[91m'   # red
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+    GRAY = '\033[90m'
+    SUCCESS = '\033[42m'
+    FAILED = '\033[41m'
+    SELECTED = '\033[7m'
+    BLINK = '\033[5m'

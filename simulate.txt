@@ -1,0 +1,49 @@
+# INITIAL STATE
+balance server
+balance client client_1
+balance client client_2
+balance client client_3
+delay 1
+bchain client_1
+bchain client_2
+bchain client_3
+delay 1
+wait
+# TRIVIAL TRANSFER SUCCESS
+transfer client_1 client_2 2
+wait
+bchain client_1
+bchain client_2
+bchain client_3
+delay 1
+wait
+# 2 CONCURRENT TRANSFERS
+transfer client_3 client_1 5
+delay 1
+transfer client_2 client_3 3
+wait
+balance server
+bchain client_1
+bchain client_2
+bchain client_3
+delay 1
+wait
+# 3 CONCURRENT TRANSFERS
+transfer client_1 client_2 1
+delay 0.6
+transfer client_3 client_1 1
+delay 0.6
+transfer client_2 client_3 1
+wait
+balance server
+bchain client_1
+bchain client_2
+bchain client_3
+delay 1
+wait
+# TRIVIAL TRANSFER ABORT
+transfer client_1 client_2 100
+wait
+bchain client_1
+bchain client_2
+bchain client_3

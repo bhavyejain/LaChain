@@ -1,6 +1,7 @@
 import socket
 import threading
 import config
+from utils import Colors as c
 
 clients = config.CLIENT_PORTS
 
@@ -12,11 +13,11 @@ def handle_client(client, client_id):
         try:
             message = client.recv(config.BUFF_SIZE).decode()
             if message:
-                print(f'{client_id}: {message}')
+                print(f'{c.VIOLET}{client_id}{c.ENDC}: {message}')
 
                 if message.startswith("BALANCE"):
                     bal = balance_sheet[client_id]
-                    print(f'Sending balance {bal} to {client_id}')
+                    print(f'Sending balance ${bal} to {client_id}')
                     client.sendall(bytes(str(bal), "utf-8"))
 
                 elif message.startswith("TRANSFER"):
@@ -24,12 +25,14 @@ def handle_client(client, client_id):
                     amount = int(transfer[2])
                     balance_sheet[client_id] = balance_sheet[client_id] - amount
                     balance_sheet[transfer[1]] = balance_sheet[transfer[1]] + amount
+                    print(f'Transferred ${amount} from {client_id} to {transfer[1]}.')
             else:
                 print(f'Closing connection to {client_id}')
                 client.close()
                 break
         except Exception as e:
-            print(f'handle_client# Exception in {client_id} thread! Details: {e.__str__()}')
+            print(f'{c.ERROR}handle_client# Exception thrown in {client_id} thread!{c.ENDC}')
+            print(f'Exception: {e.__str__()}, Traceback: {e.__traceback__()}')
 
 def handle_cli(client, client_id):
     client.sendall(bytes("Server connected", "utf-8"))
@@ -37,15 +40,19 @@ def handle_cli(client, client_id):
         try:
             message = client.recv(config.BUFF_SIZE).decode()
             if message:
-                print(f'{client_id}: {message}')
+                print(f'{c.VIOLET}{client_id}:{c.ENDC} {message}')
                 if message == "BALANCE":
-                    print(str(balance_sheet))
+                    print(f"===== {c.SELECTED}ACCOUNT INFO{c.ENDC} =====")
+                    for c_name, bal in balance_sheet.items():
+                        print(f'{c.BLUE}{c_name}{c.ENDC}  :\t {bal}')
+                    print("========================")
             else:
                 print(f'Closing connection to {client_id}')
                 client.close()
                 break
         except Exception as e:
-            print(f'handle_client# Exception in {client_id} thread! Details: {e.__str__()}')
+            print(f'{c.ERROR}handle_cli# Exception thrown in {client_id} thread!{c.ENDC}')
+            print(f'Exception: {e.__str__()}, Traceback: {e.__traceback__()}')
 
 def receive():
     while True:
@@ -65,8 +72,9 @@ def receive():
         thread.start()
 
 if (__name__ == "__main__"):
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
         server.bind((config.HOST, config.BANK_PORT))
         server.listen(5)
+        print(f'================= SERVER STARTUP COMPLETE =================')
+        print('Listening for new connections...')
         receive()
